@@ -23,11 +23,11 @@ n_default = 1.4
 distance_default =  [10, 30]
 
 # return mu_a, mu_s in mm-1. 
-def compute_ua_us(hbo, hhb, cco, coef_path, a, b, lambdas, g):
-    C_true = np.array([hbo, hhb, cco]) / 1e6
+def compute_ua_us(hbo, hhb, coef_path, a, b, lambdas, g):
+    C_true = np.array([hbo, hhb]) / 1e6
     extinction_coeffs = coef_path
     extinction_coeffs_filtered = extinction_coeffs[extinction_coeffs['Lambda'].isin(lambdas)]
-    E3 = extinction_coeffs_filtered[['HbO2', 'Hb', 'CCO']].values
+    E3 = extinction_coeffs_filtered[['HbO2', 'Hb']].values
     E3 = E3 * math.log(10)
     mu_a = np.dot(C_true.T, E3.T)
     #print(mu_a.shape)
@@ -36,9 +36,9 @@ def compute_ua_us(hbo, hhb, cco, coef_path, a, b, lambdas, g):
 
 
 # get 2 layers' properties. 
-def get_2layer_properties(hbo1, hhb1, cco1, hbo2, hhb2, cco2, coef_path, a1 = a1_default, b1 = b1_default,a2 = a2_default, b2 = b2_default, lambdas = lambdas_default, g = g_default):
-    mu_a_1, mu_s_1 = compute_ua_us(hbo1, hhb1, cco1, coef_path, a1, b1, lambdas, g)
-    mu_a_2, mu_s_2 = compute_ua_us(hbo2, hhb2, cco2, coef_path, a2, b2, lambdas, g)
+def get_2layer_properties(hbo1, hhb1, hbo2, hhb2, coef_path, a1 = a1_default, b1 = b1_default,a2 = a2_default, b2 = b2_default, lambdas = lambdas_default, g = g_default):
+    mu_a_1, mu_s_1 = compute_ua_us(hbo1, hhb1, coef_path, a1, b1, lambdas, g)
+    mu_a_2, mu_s_2 = compute_ua_us(hbo2, hhb2, coef_path, a2, b2, lambdas, g)
     return mu_a_1, mu_s_1, mu_a_2, mu_s_2 
 
 def run_mcx(ua1, us1, ua2, us2, l1, g = g_default, n = n_default, distances = distance_default, tend =1e-08, devf = 1, nphoton = 1e8, source_type='laser'):
@@ -130,10 +130,10 @@ def mcx_simulation(ua1, us1, ua2, us2, l1, g = g_default, n = n_default, distanc
     return intensity_d_list, unit
 
 # final function:
-def mcx_sim_2layers(hbo1, hhb1, cco1, hbo2, hhb2, cco2, l1, coef_path, a1 = a1_default, b1 = b1_default, a2 = a2_default, b2 = b2_default, lambdas = lambdas_default, g = g_default, n = n_default, distance = distance_default, tend =1e-08, devf = 10000, nphoton = 5e7, source_type = 'laser'):
+def mcx_sim_2layers(hbo1, hhb1, hbo2, hhb2, l1, coef_path, a1 = a1_default, b1 = b1_default, a2 = a2_default, b2 = b2_default, lambdas = lambdas_default, g = g_default, n = n_default, distance = distance_default, tend =1e-08, devf = 10000, nphoton = 5e7, source_type = 'laser'):
     
     distance_data = {d: [] for d in distance}
-    mu_a_1, mu_s_1, mu_a_2, mu_s_2  = get_2layer_properties(hbo1, hhb1, cco1, hbo2, hhb2, cco2, coef_path, a1, b1, a2, b2, lambdas, g)
+    mu_a_1, mu_s_1, mu_a_2, mu_s_2  = get_2layer_properties(hbo1, hhb1, hbo2, hhb2, coef_path, a1, b1, a2, b2, lambdas, g)
     for sim_idx, (ua1, us1, ua2, us2) in enumerate(zip(mu_a_1, mu_s_1, mu_a_2, mu_s_2)): # 8 wl
         TPSF_list, unit = mcx_simulation(ua1, us1, ua2, us2, l1, g, n, distance, tend, devf, nphoton, source_type)
         #[[x[0] * nphoton * tend ] for x in TPSF_list] # weight/mm2
