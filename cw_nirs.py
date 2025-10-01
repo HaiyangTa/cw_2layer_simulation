@@ -20,7 +20,7 @@ lambdas_default = list(range(750, 951, 2))
 
 g_default = 0.9
 n_default = 1.4
-distance_default =  [10, 30]
+distance_default =  [10, 20, 30, 40]
 
 # return mu_a, mu_s in mm-1. 
 def compute_ua_us(hbo, hhb, cco, coef_path, a, b, lambdas, g):
